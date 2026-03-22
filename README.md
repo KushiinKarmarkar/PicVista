@@ -1,36 +1,34 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PicVista
 
-## Getting Started
+Next.js App Router frontend + API routes, Sharp for image work, optional BullMQ + Redis for horizontal workers, file-backed job status for multi-process safety.
 
-First, run the development server:
+## Commands
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- `npm run dev` — local development
+- `npm run build` / `npm start` — production
+- `npm run worker` — BullMQ worker (requires `REDIS_URL` and shared `tmp/` with the API process)
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Environment
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Copy `.env.example` to `.env.local`. Set `NEXT_PUBLIC_SITE_URL` for production SEO metadata and sitemap URLs.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Vercel / serverless**: processing runs inline in the job API route (see `src/lib/jobs/dispatch.ts`). Use a small max upload or move heavy work to Railway/Fly + Redis.
+- **Long-running Node**: omit `VERCEL` and optionally set `REDIS_URL` + run `npm run worker` on a second instance with shared storage (or point uploads/outputs to S3/R2).
 
-## Learn More
+## SEO
 
-To learn more about Next.js, take a look at the following resources:
+Metadata, canonical URLs, and JSON-LD live on `/` and each `/tools/*` route (`layout.tsx`, `page.tsx`, `SiteStructuredData`, `HomeStructuredData`, `FaqJsonLd`). Expand keywords and copy on those pages as you measure Search Console data.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Phase 2 (AI)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- **Background**: `REMOVE_BG_API_KEY` → remove.bg API (`/tools/remove-background`).
+- **Watermark / inpaint**: mask PNG + `REPLICATE_API_TOKEN` + `REPLICATE_LAMA_VERSION` (`/tools/watermark`).
+- **Upscale**: Lanczos in Sharp, or Replicate with `REPLICATE_ESRGAN_VERSION` (`/tools/upscale`).
 
-## Deploy on Vercel
+## Phase 3
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Batch**: `/tools/batch` → `POST /api/batch` → ZIP of outputs.
+- **API**: `POST /api/v1/jobs`, `POST /api/v1/batch`, `GET /api/v1/jobs/:id` with `Authorization: Bearer` and `PICVISTA_API_KEY` (legacy: `IMGTOOLS_API_KEY` still accepted).
+- **Chrome**: load `extension/` as “Unpacked” in `chrome://extensions` and set `ORIGIN` in `popup.js`.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Hydration: `<html>` / `<body>` use `suppressHydrationWarning` so privacy extensions (e.g. GA opt-out attributes) do not break React hydration.

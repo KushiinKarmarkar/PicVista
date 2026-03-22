@@ -1,0 +1,11 @@
+{
+  "manifest_version": 3,
+  "name": "PicVista quick open",
+  "version": "1.0.0",
+  "description": "Open PicVista image utilities in a new tab.",
+  "action": {
+    "default_title": "PicVista",
+    "default_popup": "popup.html"
+  },
+  "permissions": []
+}
