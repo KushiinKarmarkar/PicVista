@@ -5,6 +5,7 @@ import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { Analytics } from "@/components/Analytics";
 import { AdSenseScript } from "@/components/AdSenseScript";
 import { SiteStructuredData } from "@/components/SiteStructuredData";
+import { getSiteUrl } from "@/lib/siteUrl";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -16,7 +17,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+const siteUrl = getSiteUrl();
+
+/** Paste the content value from AdSense / Search Console “HTML tag” verification (not the whole tag). */
+const googleSiteVerification = process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION?.trim();
 
 const primaryDescription =
   "Compress images online, convert PNG to JPG or WebP to PNG, reduce image file size, resize for Instagram and LinkedIn, remove backgrounds, and batch-download results — free tools, no sign-up.";
@@ -58,6 +62,16 @@ export const metadata: Metadata = {
     title: "PicVista — Compress & convert images online",
     description: primaryDescription,
   },
+  other: {
+    "google-adsense-account": "ca-pub-2297460973101114",
+  },
+  ...(googleSiteVerification
+    ? {
+        verification: {
+          google: googleSiteVerification,
+        },
+      }
+    : {}),
 };
 
 export default function RootLayout({
