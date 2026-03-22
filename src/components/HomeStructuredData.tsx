@@ -8,7 +8,6 @@ const tools = [
   { name: "Convert PNG to JPG, WebP, AVIF", path: "/tools/convert" },
   { name: "Image resizer — Instagram, LinkedIn, custom", path: "/tools/resize" },
   { name: "Remove background from image", path: "/tools/remove-background" },
-  { name: "Watermark removal (inpainting)", path: "/tools/watermark" },
   { name: "Upscale image 2x or 4x", path: "/tools/upscale" },
   { name: "Batch image processing (ZIP)", path: "/tools/batch" },
 ];
@@ -20,7 +19,7 @@ export function HomeStructuredData() {
         "@context": "https://schema.org",
         "@type": "ItemList",
         name: "PicVista — free online image utilities",
-        description: "Core tools for compression, conversion, resizing, and AI-assisted edits.",
+        description: "Core tools for compression, conversion, resizing, background removal, and upscaling.",
         numberOfItems: tools.length,
         itemListElement: tools.map((t, i) => ({
           "@type": "ListItem",

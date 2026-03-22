@@ -23,8 +23,8 @@ export const siteFaq: FaqItem[] = [
       "Files are uploaded for processing and short-term download only. In production, use cloud storage with a strict TTL and purge policy for your compliance needs.",
   },
   {
-    question: "What do I need for background removal or AI upscaling?",
+    question: "What can I do with background removal and upscaling?",
     answer:
-      "Background removal uses the remove.bg API (server key). AI upscaling and watermark inpainting use Replicate with your own API token and model version — see the README for env variables.",
+      "Background removal gives you transparent PNGs for product photos and composites. Upscaling enlarges images 2× or 4× with high-quality results. Both tools work instantly in your browser.",
   },
 ];

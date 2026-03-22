@@ -9,7 +9,6 @@ export function UpscalePanel() {
   const { state, run, reset } = useImagePipeline();
   const [file, setFile] = useState<File | null>(null);
   const [scale, setScale] = useState<2 | 4>(2);
-  const [engine, setEngine] = useState<"lanczos" | "replicate">("lanczos");
   const preview = useMemo(() => (file ? URL.createObjectURL(file) : null), [file]);
   useEffect(() => {
     return () => {
@@ -37,10 +36,7 @@ export function UpscalePanel() {
   return (
     <div className="flex flex-col gap-6">
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
-        <strong>Lanczos</strong> is a fast mathematical upscale (no new detail).{" "}
-        <strong>Replicate</strong> uses Real-ESRGAN (or your chosen model) when{" "}
-        <code className="rounded bg-zinc-200 px-1 dark:bg-zinc-800">REPLICATE_API_TOKEN</code> and{" "}
-        <code className="rounded bg-zinc-200 px-1 dark:bg-zinc-800">REPLICATE_ESRGAN_VERSION</code> are set.
+        Enlarge your images 2× or 4× with high-quality scaling. Results are sharp and ready for print or social.
       </p>
       <div
         {...getRootProps()}
@@ -77,18 +73,9 @@ export function UpscalePanel() {
                 </button>
               ))}
             </div>
-            <label className="text-xs font-medium uppercase text-zinc-500">Engine</label>
-            <select
-              value={engine}
-              onChange={(e) => setEngine(e.target.value as "lanczos" | "replicate")}
-              className="rounded-lg border border-zinc-300 bg-white px-3 py-2 text-sm dark:border-zinc-600 dark:bg-zinc-950"
-            >
-              <option value="lanczos">Lanczos (Sharp)</option>
-              <option value="replicate">Replicate (AI)</option>
-            </select>
             <button
               type="button"
-              onClick={() => file && void run(file, { kind: "upscale", scale, engine })}
+              onClick={() => file && void run(file, { kind: "upscale", scale, engine: "lanczos" })}
               disabled={!file || state.phase === "uploading" || state.phase === "processing"}
               className="rounded-xl bg-amber-600 px-4 py-3 text-sm font-semibold text-white hover:bg-amber-500 disabled:opacity-50"
             >

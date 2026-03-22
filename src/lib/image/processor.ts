@@ -433,10 +433,7 @@ export async function processImage(
         outputBytes: out.length,
         inputBytes,
         mime: "image/png",
-        message:
-          params.engine === "lanczos"
-            ? "Classic Lanczos upscale (not a generative model). For AI detail, pick Replicate + Real-ESRGAN."
-            : undefined,
+        message: undefined,
       };
     }
     const key = cacheKey(inputBuffer, params);
@@ -447,10 +444,7 @@ export async function processImage(
       outputBytes: out.length,
       inputBytes,
       mime: "image/png",
-      message:
-        params.engine === "lanczos"
-          ? "Classic Lanczos upscale (not a generative model). For AI detail, pick Replicate + Real-ESRGAN."
-          : undefined,
+      message: undefined,
     };
   }
 

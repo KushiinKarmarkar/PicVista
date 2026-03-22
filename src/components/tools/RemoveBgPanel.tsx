@@ -35,8 +35,7 @@ export function RemoveBgPanel() {
   return (
     <div className="flex flex-col gap-6">
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
-        Uses the remove.bg API. Add <code className="rounded bg-zinc-200 px-1 dark:bg-zinc-800">REMOVE_BG_API_KEY</code>{" "}
-        to your server environment.
+        Remove backgrounds and get transparent PNGs for product shots, headshots, and composites.
       </p>
       <div
         {...getRootProps()}

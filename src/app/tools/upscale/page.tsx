@@ -1,14 +1,14 @@
 import type { Metadata } from "next";
 import { UpscalePanel } from "@/components/tools/UpscalePanel";
 
-const title = "Upscale Images Online — 2× & 4× (Lanczos or AI)";
+const title = "Upscale Images Online — 2× & 4× Free";
 const description =
-  "Upscale images 2× or 4×: fast Lanczos scaling in-browser processing, or configure Replicate Real-ESRGAN for AI detail recovery.";
+  "Upscale images 2× or 4× for free. High-quality enlargement for print, social media, or thumbnails. Works in your browser.";
 
 export const metadata: Metadata = {
   title,
   description,
-  keywords: ["upscale image", "enlarge image online", "2x image", "4x upscale", "real-esrgan"],
+  keywords: ["upscale image", "enlarge image online", "2x image", "4x upscale", "image upscaler free"],
   alternates: { canonical: "/tools/upscale" },
   openGraph: { title, description },
 };
@@ -20,8 +20,7 @@ export default function UpscalePage() {
         Upscale images
       </h1>
       <p className="mt-3 max-w-3xl text-zinc-600 dark:text-zinc-400">
-        Choose mathematical Lanczos enlargement for speed, or connect Replicate for generative upscaling when you have
-        a model version configured.
+        Enlarge photos and graphics 2× or 4× with sharp results. Perfect for print, social posts, or thumbnails.
       </p>
       <div className="mt-8">
         <UpscalePanel />

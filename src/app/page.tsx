@@ -33,8 +33,7 @@ export default function Home() {
           </h1>
           <p className="max-w-2xl text-lg leading-relaxed text-zinc-600 dark:text-zinc-400">
             Reduce image file size without upsizing outputs, switch between PNG, JPG, WEBP, and AVIF, resize for
-            Instagram or LinkedIn, cut out backgrounds, inpaint watermarks with a mask, upscale, or run the same
-            job on many files and grab one ZIP.
+            Instagram or LinkedIn, cut out backgrounds, upscale, or run the same job on many files and grab one ZIP.
           </p>
           <nav aria-label="Popular tools" className="flex flex-wrap gap-2 text-sm">
             <Link
@@ -112,19 +111,13 @@ export default function Home() {
               <Link href="/tools/remove-background" className="font-medium text-emerald-700 hover:underline dark:text-emerald-400">
                 Background remover
               </Link>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">Transparent PNG via remove.bg.</p>
-            </li>
-            <li>
-              <Link href="/tools/watermark" className="font-medium text-emerald-700 hover:underline dark:text-emerald-400">
-                Watermark removal
-              </Link>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">Mask-based inpainting (Replicate).</p>
+              <p className="text-sm text-zinc-600 dark:text-zinc-400">Transparent PNG for product shots and composites.</p>
             </li>
             <li>
               <Link href="/tools/upscale" className="font-medium text-emerald-700 hover:underline dark:text-emerald-400">
                 Upscale images
               </Link>
-              <p className="text-sm text-zinc-600 dark:text-zinc-400">2× / 4× — Lanczos or Real-ESRGAN.</p>
+              <p className="text-sm text-zinc-600 dark:text-zinc-400">2× or 4× high-quality enlargement.</p>
             </li>
             <li>
               <Link href="/tools/batch" className="font-medium text-emerald-700 hover:underline dark:text-emerald-400">

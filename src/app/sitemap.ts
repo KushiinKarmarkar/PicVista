@@ -9,7 +9,6 @@ const paths = [
   "/tools/compress",
   "/tools/resize",
   "/tools/remove-background",
-  "/tools/watermark",
   "/tools/upscale",
   "/tools/batch",
 ];

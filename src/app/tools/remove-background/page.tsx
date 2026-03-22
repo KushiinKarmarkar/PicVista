@@ -3,7 +3,7 @@ import { RemoveBgPanel } from "@/components/tools/RemoveBgPanel";
 
 const title = "Remove Background from Image Online — Transparent PNG";
 const description =
-  "Remove image backgrounds and download a transparent PNG. Powered by remove.bg; add your API key on the server for production.";
+  "Remove image backgrounds and download a transparent PNG. Clean cutouts for product shots, headshots, and composites.";
 
 export const metadata: Metadata = {
   title,
@@ -20,8 +20,7 @@ export default function RemoveBackgroundPage() {
         Remove background from image
       </h1>
       <p className="mt-3 max-w-3xl text-zinc-600 dark:text-zinc-400">
-        Get a clean cutout for product shots, headshots, and composites. Output is PNG with alpha. Requires a
-        remove.bg API key in your environment.
+        Get a clean cutout for product shots, headshots, and composites. Output is PNG with transparency.
       </p>
       <div className="mt-8">
         <RemoveBgPanel />

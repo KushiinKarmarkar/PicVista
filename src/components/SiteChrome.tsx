@@ -22,9 +22,6 @@ export function SiteHeader() {
           <Link href="/tools/remove-background" className={link}>
             Background
           </Link>
-          <Link href="/tools/watermark" className={link}>
-            Watermark
-          </Link>
           <Link href="/tools/upscale" className={link}>
             Upscale
           </Link>
@@ -45,7 +42,7 @@ export function SiteFooter() {
           <p className="font-medium text-zinc-800 dark:text-zinc-200">PicVista</p>
           <p className="mt-2 max-w-md leading-relaxed">
             Free online image compressor, converter, and resizer. Shrink file sizes, change PNG/JPG/WebP/AVIF, resize
-            for social platforms, remove backgrounds, inpaint with a mask, upscale, or batch to ZIP.
+            for social platforms, remove backgrounds, upscale, or batch to ZIP.
           </p>
         </div>
         <div className="grid grid-cols-2 gap-8 sm:grid-cols-3">
@@ -68,21 +65,13 @@ export function SiteFooter() {
             </Link>
           </div>
           <div className="flex flex-col gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">AI & advanced</span>
+            <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">More tools</span>
             <Link href="/tools/remove-background" className="hover:text-zinc-900 dark:hover:text-zinc-100">
               Remove background
-            </Link>
-            <Link href="/tools/watermark" className="hover:text-zinc-900 dark:hover:text-zinc-100">
-              Watermark removal
             </Link>
             <Link href="/tools/upscale" className="hover:text-zinc-900 dark:hover:text-zinc-100">
               Upscale image
             </Link>
-          </div>
-          <div className="flex flex-col gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Developers</span>
-            <span className="text-zinc-500">REST API (Bearer key)</span>
-            <code className="text-xs text-zinc-500">POST /api/v1/jobs</code>
           </div>
         </div>
       </div>

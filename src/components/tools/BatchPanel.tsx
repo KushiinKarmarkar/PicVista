@@ -60,7 +60,7 @@ export function BatchPanel() {
     <div className="flex flex-col gap-6">
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
         Up to 40 images per batch. You receive one ZIP with outputs in upload order. Watermark removal and
-        background removal are not available in batch (per-image masks / API cost).
+        background removal are not available in batch.
       </p>
       <div
         {...getRootProps()}
