@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { AdSlot } from "@/components/AdSlot";
 import { FaqJsonLd } from "@/components/FaqJsonLd";
 import { HomeStructuredData } from "@/components/HomeStructuredData";
 import { ConvertPanel } from "@/components/tools/ConvertPanel";
@@ -74,12 +73,10 @@ export default function Home() {
             >
               Batch ZIP
             </Link>
-          </nav>
-        </section>
+        </nav>
+      </section>
 
-        <AdSlot variant="banner" />
-
-        <section className="flex flex-col gap-4" aria-labelledby="converter-heading">
+      <section className="flex flex-col gap-4" aria-labelledby="converter-heading">
           <h2 id="converter-heading" className="text-2xl font-semibold text-zinc-900 dark:text-zinc-50">
             Image format converter (PNG, JPG, WEBP, AVIF)
           </h2>

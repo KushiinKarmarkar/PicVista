@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import type { ResizePreset } from "@/types/image-tools";
-import { AdSlot } from "@/components/AdSlot";
 import { formatBytes } from "@/components/tools/FormatBytes";
 import { useImagePipeline } from "@/components/tools/useImagePipeline";
 
@@ -68,8 +67,6 @@ export function ResizePanel({ defaultPreset = "custom" }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      <AdSlot variant="banner" />
-
       <div
         {...getRootProps()}
         className={`cursor-pointer rounded-2xl border-2 border-dashed px-6 py-14 text-center transition outline-none ${
@@ -176,7 +173,6 @@ export function ResizePanel({ defaultPreset = "custom" }: Props) {
         </div>
       )}
 
-      <AdSlot variant="inline" className="min-h-[120px]" />
     </div>
   );
 }

@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { AdSlot } from "@/components/AdSlot";
 import { formatBytes } from "@/components/tools/FormatBytes";
 import { useImagePipeline } from "@/components/tools/useImagePipeline";
 
@@ -45,7 +44,6 @@ export function WatermarkPanel() {
 
   return (
     <div className="flex flex-col gap-6">
-      <AdSlot variant="banner" />
       <div className="rounded-xl border border-zinc-200 bg-white p-4 text-sm text-zinc-700 dark:border-zinc-700 dark:bg-zinc-950 dark:text-zinc-300">
         <p className="font-medium text-zinc-900 dark:text-zinc-100">Mask format</p>
         <p className="mt-2">
@@ -118,7 +116,6 @@ export function WatermarkPanel() {
           </a>
         </div>
       )}
-      <AdSlot variant="inline" className="min-h-[120px]" />
     </div>
   );
 }

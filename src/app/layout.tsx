@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { Analytics } from "@/components/Analytics";
-import { AdSenseScript } from "@/components/AdSenseScript";
 import { SiteStructuredData } from "@/components/SiteStructuredData";
 import { getSiteUrl } from "@/lib/siteUrl";
 
@@ -90,7 +89,6 @@ export default function RootLayout({
         className="flex min-h-full flex-col bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-50"
       >
         <SiteStructuredData />
-        <AdSenseScript />
         <Analytics />
         <SiteHeader />
         <div className="flex-1">{children}</div>

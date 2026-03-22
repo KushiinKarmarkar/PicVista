@@ -3,7 +3,6 @@
 import { useCallback, useMemo, useState } from "react";
 import { useDropzone } from "react-dropzone";
 import type { SimpleProcessParams } from "@/types/image-tools";
-import { AdSlot } from "@/components/AdSlot";
 import { formatBytes } from "@/components/tools/FormatBytes";
 import { useImagePipeline } from "@/components/tools/useImagePipeline";
 
@@ -59,7 +58,6 @@ export function BatchPanel() {
 
   return (
     <div className="flex flex-col gap-6">
-      <AdSlot variant="banner" />
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
         Up to 40 images per batch. You receive one ZIP with outputs in upload order. Watermark removal and
         background removal are not available in batch (per-image masks / API cost).
@@ -129,7 +127,6 @@ export function BatchPanel() {
           </a>
         </div>
       )}
-      <AdSlot variant="inline" className="min-h-[120px]" />
     </div>
   );
 }

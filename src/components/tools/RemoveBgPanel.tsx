@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDropzone } from "react-dropzone";
-import { AdSlot } from "@/components/AdSlot";
 import { formatBytes } from "@/components/tools/FormatBytes";
 import { useImagePipeline } from "@/components/tools/useImagePipeline";
 
@@ -35,7 +34,6 @@ export function RemoveBgPanel() {
 
   return (
     <div className="flex flex-col gap-6">
-      <AdSlot variant="banner" />
       <p className="text-sm text-zinc-600 dark:text-zinc-400">
         Uses the remove.bg API. Add <code className="rounded bg-zinc-200 px-1 dark:bg-zinc-800">REMOVE_BG_API_KEY</code>{" "}
         to your server environment.
@@ -87,7 +85,6 @@ export function RemoveBgPanel() {
           </a>
         </div>
       )}
-      <AdSlot variant="inline" className="min-h-[120px]" />
     </div>
   );
 }
