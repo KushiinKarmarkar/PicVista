@@ -42,6 +42,7 @@ export async function runJob(job: JobRecord): Promise<void> {
     }
 
     const result = await processImage(buf, job.params, { maskBuffer: maskBuf });
+    if (!result.outputPath) throw new Error("Job requires outputPath");
     const ext = path.extname(result.outputPath) || ".bin";
     const outputFilename = `${job.id}${ext}`;
     const dest = path.join(TMP_OUTPUTS, outputFilename);

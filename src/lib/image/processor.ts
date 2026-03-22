@@ -32,6 +32,8 @@ const PRESETS: Record<Exclude<ResizePreset, "custom">, { width: number; height: 
 
 export type ProcessContext = {
   maskBuffer?: Buffer;
+  /** When true, skip disk writes and return outputBuffer instead. Use for serverless. */
+  returnBuffer?: boolean;
 };
 
 function cacheKey(buffer: Buffer, params: ProcessParams): string {
@@ -168,7 +170,8 @@ async function compressBuffer(
 }
 
 export type ProcessResult = {
-  outputPath: string;
+  outputPath?: string;
+  outputBuffer?: Buffer;
   outputBytes: number;
   inputBytes: number;
   mime: string;
@@ -182,18 +185,21 @@ export async function processImage(
   ctx: ProcessContext = {}
 ): Promise<ProcessResult> {
   const inputBytes = inputBuffer.length;
+  const skipDisk = Boolean(ctx.returnBuffer);
 
   if (params.kind === "convert") {
     const ext = extForFormat(params.targetFormat);
-    const cached = await findCachedOutput(inputBuffer, params, ext);
-    if (cached) {
-      const st = await fs.stat(cached);
-      return {
-        outputPath: cached,
-        outputBytes: st.size,
-        inputBytes,
-        mime: mimeForFormat(params.targetFormat),
-      };
+    if (!skipDisk) {
+      const cached = await findCachedOutput(inputBuffer, params, ext);
+      if (cached) {
+        const st = await fs.stat(cached);
+        return {
+          outputPath: cached,
+          outputBytes: st.size,
+          inputBytes,
+          mime: mimeForFormat(params.targetFormat),
+        };
+      }
     }
     const out = await encode(
       inputBuffer,
@@ -201,6 +207,14 @@ export async function processImage(
       params.quality,
       params.preserveMetadata ?? false
     );
+    if (skipDisk) {
+      return {
+        outputBuffer: out,
+        outputBytes: out.length,
+        inputBytes,
+        mime: mimeForFormat(params.targetFormat),
+      };
+    }
     const key = cacheKey(inputBuffer, params);
     const outputPath = path.join(TMP_OUTPUTS, `${key}.${ext}`);
     await fs.writeFile(outputPath, out);
@@ -231,6 +245,16 @@ export async function processImage(
       params.quality
     );
 
+    if (skipDisk) {
+      return {
+        outputBuffer: out,
+        outputBytes: out.length,
+        inputBytes,
+        mime: mimeForFormat(targetFormat),
+        passthrough,
+        message,
+      };
+    }
     const compressParams: CompressParams = {
       kind: "compress",
       quality: qualityUsed,
@@ -283,15 +307,17 @@ export async function processImage(
             : "jpeg";
     const ext = extForFormat(outFormat);
 
-    const cached = await findCachedOutput(inputBuffer, resizePart, ext);
-    if (cached) {
-      const st = await fs.stat(cached);
-      return {
-        outputPath: cached,
-        outputBytes: st.size,
-        inputBytes,
-        mime: mimeForFormat(outFormat),
-      };
+    if (!skipDisk) {
+      const cached = await findCachedOutput(inputBuffer, resizePart, ext);
+      if (cached) {
+        const st = await fs.stat(cached);
+        return {
+          outputPath: cached,
+          outputBytes: st.size,
+          inputBytes,
+          mime: mimeForFormat(outFormat),
+        };
+      }
     }
 
     let pipeline = sharp(inputBuffer).rotate();
@@ -319,6 +345,14 @@ export async function processImage(
       out = await pipeline.jpeg({ quality: 88, mozjpeg: true }).toBuffer();
     }
 
+    if (skipDisk) {
+      return {
+        outputBuffer: out,
+        outputBytes: out.length,
+        inputBytes,
+        mime: mimeForFormat(outFormat),
+      };
+    }
     const key = cacheKey(inputBuffer, resizePart);
     const outputPath = path.join(TMP_OUTPUTS, `${key}.${ext}`);
     await fs.writeFile(outputPath, out);
@@ -331,17 +365,27 @@ export async function processImage(
   }
 
   if (params.kind === "removeBackground") {
-    const cached = await findCachedOutput(inputBuffer, params, "png");
-    if (cached) {
-      const st = await fs.stat(cached);
+    if (!skipDisk) {
+      const cached = await findCachedOutput(inputBuffer, params, "png");
+      if (cached) {
+        const st = await fs.stat(cached);
+        return {
+          outputPath: cached,
+          outputBytes: st.size,
+          inputBytes,
+          mime: "image/png",
+        };
+      }
+    }
+    const png = await removeBackgroundWithRemoveBg(inputBuffer);
+    if (skipDisk) {
       return {
-        outputPath: cached,
-        outputBytes: st.size,
+        outputBuffer: png,
+        outputBytes: png.length,
         inputBytes,
         mime: "image/png",
       };
     }
-    const png = await removeBackgroundWithRemoveBg(inputBuffer);
     const key = cacheKey(inputBuffer, params);
     const outputPath = path.join(TMP_OUTPUTS, `${key}.png`);
     await fs.writeFile(outputPath, png);
@@ -354,15 +398,17 @@ export async function processImage(
   }
 
   if (params.kind === "upscale") {
-    const cached = await findCachedOutput(inputBuffer, params, "png");
-    if (cached) {
-      const st = await fs.stat(cached);
-      return {
-        outputPath: cached,
-        outputBytes: st.size,
-        inputBytes,
-        mime: "image/png",
-      };
+    if (!skipDisk) {
+      const cached = await findCachedOutput(inputBuffer, params, "png");
+      if (cached) {
+        const st = await fs.stat(cached);
+        return {
+          outputPath: cached,
+          outputBytes: st.size,
+          inputBytes,
+          mime: "image/png",
+        };
+      }
     }
 
     let out: Buffer;
@@ -381,6 +427,18 @@ export async function processImage(
         .toBuffer();
     }
 
+    if (skipDisk) {
+      return {
+        outputBuffer: out,
+        outputBytes: out.length,
+        inputBytes,
+        mime: "image/png",
+        message:
+          params.engine === "lanczos"
+            ? "Classic Lanczos upscale (not a generative model). For AI detail, pick Replicate + Real-ESRGAN."
+            : undefined,
+      };
+    }
     const key = cacheKey(inputBuffer, params);
     const outputPath = path.join(TMP_OUTPUTS, `${key}.png`);
     await fs.writeFile(outputPath, out);
@@ -400,27 +458,42 @@ export async function processImage(
     if (!ctx.maskBuffer?.length) {
       throw new Error("Watermark removal requires a mask image (white = area to restore).");
     }
+    if (!skipDisk) {
+      const h = crypto.createHash("sha256");
+      h.update(inputBuffer);
+      h.update(JSON.stringify(params));
+      h.update(ctx.maskBuffer);
+      const wmKey = h.digest("hex");
+      const cachedPath = path.join(TMP_OUTPUTS, `${wmKey}.png`);
+      try {
+        await fs.access(cachedPath);
+        const st = await fs.stat(cachedPath);
+        return {
+          outputPath: cachedPath,
+          outputBytes: st.size,
+          inputBytes,
+          mime: "image/png",
+        };
+      } catch {
+        /* compute */
+      }
+    }
+
+    const png = await inpaintWithReplicate(inputBuffer, ctx.maskBuffer);
+    if (skipDisk) {
+      return {
+        outputBuffer: png,
+        outputBytes: png.length,
+        inputBytes,
+        mime: "image/png",
+      };
+    }
     const h = crypto.createHash("sha256");
     h.update(inputBuffer);
     h.update(JSON.stringify(params));
     h.update(ctx.maskBuffer);
     const wmKey = h.digest("hex");
-    const cachedPath = path.join(TMP_OUTPUTS, `${wmKey}.png`);
-    try {
-      await fs.access(cachedPath);
-      const st = await fs.stat(cachedPath);
-      return {
-        outputPath: cachedPath,
-        outputBytes: st.size,
-        inputBytes,
-        mime: "image/png",
-      };
-    } catch {
-      /* compute */
-    }
-
-    const png = await inpaintWithReplicate(inputBuffer, ctx.maskBuffer);
-    const outputPath = cachedPath;
+    const outputPath = path.join(TMP_OUTPUTS, `${wmKey}.png`);
     await fs.writeFile(outputPath, png);
     return {
       outputPath,

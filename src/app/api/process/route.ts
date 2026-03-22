@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import fs from "node:fs/promises";
 import path from "node:path";
 import { processImage } from "@/lib/image/processor";
 import { parseJobParams } from "@/lib/parseJobParams";
@@ -66,12 +65,31 @@ export async function POST(req: Request): Promise<Response> {
       maskBuf = Buffer.from(await maskFile.arrayBuffer());
     }
 
-    const result = await processImage(buf, params, { maskBuffer: maskBuf });
-    const outBuf = await fs.readFile(result.outputPath);
-    const ext = path.extname(result.outputPath) || ".bin";
+    const result = await processImage(buf, params, {
+      maskBuffer: maskBuf,
+      returnBuffer: true,
+    });
+    const outBuf = result.outputBuffer;
+    if (!outBuf) {
+      return NextResponse.json(
+        { error: "No output (expected outputBuffer)" },
+        { status: 500 }
+      );
+    }
+    const ext = result.outputPath
+      ? path.extname(result.outputPath)
+      : result.mime === "image/png"
+        ? ".png"
+        : result.mime === "image/jpeg"
+          ? ".jpg"
+          : result.mime === "image/webp"
+            ? ".webp"
+            : result.mime === "image/avif"
+              ? ".avif"
+              : ".bin";
     const suggestedName = `output${ext}`;
 
-    return new Response(outBuf, {
+    return new Response(new Uint8Array(outBuf), {
       status: 200,
       headers: {
         "Content-Type": result.mime ?? "application/octet-stream",

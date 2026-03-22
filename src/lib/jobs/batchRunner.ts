@@ -25,6 +25,7 @@ export async function runBatchZipJob(jobId: string, params: BatchZipParams): Pro
     const buf = await fsPromises.readFile(path.join(TMP_UPLOADS, uploadId));
     totalIn += buf.length;
     const result = await processImage(buf, params.childParams);
+    if (!result.outputPath) throw new Error("Batch requires outputPath");
     const ext = path.extname(result.outputPath) || ".bin";
     const name = `${String(idx).padStart(3, "0")}-out${ext}`;
     archive.file(result.outputPath, { name });
