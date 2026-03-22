@@ -145,6 +145,7 @@ export function ConvertPanel({ defaultTarget = "jpeg" }: Props) {
           </p>
           <a
             href={state.downloadUrl}
+            download={state.suggestedFilename}
             className="inline-flex w-fit items-center justify-center rounded-xl bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600"
           >
             Download result

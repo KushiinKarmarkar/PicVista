@@ -108,6 +108,7 @@ export function UpscalePanel() {
           </p>
           <a
             href={state.downloadUrl}
+            download={state.suggestedFilename}
             className="inline-flex w-fit rounded-xl bg-amber-800 px-4 py-2 text-sm font-semibold text-white hover:bg-amber-700"
           >
             Download PNG

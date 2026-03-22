@@ -79,6 +79,7 @@ export function RemoveBgPanel() {
           </p>
           <a
             href={state.downloadUrl}
+            download={state.suggestedFilename}
             className="inline-flex w-fit rounded-xl bg-rose-700 px-4 py-2 text-sm font-semibold text-white hover:bg-rose-600"
           >
             Download PNG

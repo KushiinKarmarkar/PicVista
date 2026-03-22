@@ -110,6 +110,7 @@ export function WatermarkPanel() {
           </p>
           <a
             href={state.downloadUrl}
+            download={state.suggestedFilename}
             className="inline-flex w-fit rounded-xl bg-cyan-700 px-4 py-2 text-sm font-semibold text-white"
           >
             Download PNG

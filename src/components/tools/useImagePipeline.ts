@@ -13,8 +13,40 @@ export type PipelineState =
       inputBytes: number;
       outputBytes: number;
       notice?: string;
+      suggestedFilename?: string;
     }
   | { phase: "error"; message: string };
+
+/** Single-request processing (Vercel-friendly: no cross-instance /tmp). */
+async function processInline(
+  file: File,
+  params: Exclude<ProcessParams, { kind: "batchZip" }>,
+  mask?: File
+): Promise<{
+  url: string;
+  inputBytes: number;
+  outputBytes: number;
+  notice?: string;
+  suggestedFilename?: string;
+}> {
+  const fd = new FormData();
+  fd.append("file", file);
+  fd.append("params", JSON.stringify(params));
+  if (mask) fd.append("mask", mask);
+
+  const res = await fetch("/api/process", { method: "POST", body: fd });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error((err as { error?: string }).error || "Processing failed");
+  }
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const inputBytes = parseInt(res.headers.get("X-Input-Bytes") ?? "0", 10);
+  const outputBytes = parseInt(res.headers.get("X-Output-Bytes") ?? "0", 10);
+  const notice = res.headers.get("X-Message") ?? undefined;
+  const suggestedFilename = res.headers.get("X-Suggested-Filename") ?? undefined;
+  return { url, inputBytes, outputBytes, notice, suggestedFilename };
+}
 
 async function uploadFile(file: File): Promise<string> {
   const fd = new FormData();
@@ -60,28 +92,23 @@ export function useImagePipeline() {
   const [state, setState] = useState<PipelineState>({ phase: "idle" });
 
   const run = useCallback(async (file: File, params: Exclude<ProcessParams, { kind: "batchZip" }>) => {
-    setState({ phase: "uploading" });
-    try {
-      const uploadId = await uploadFile(file);
-      setState({ phase: "processing" });
-      const jobRes = await fetch("/api/jobs", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uploadId, params }),
-      });
-      if (!jobRes.ok) {
-        const err = await jobRes.json().catch(() => ({}));
-        throw new Error((err as { error?: string }).error || "Job failed");
+    setState((prev) => {
+      if (prev.phase === "done" && prev.downloadUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(prev.downloadUrl);
       }
-      const { jobId } = (await jobRes.json()) as { jobId: string };
-      const payload = await pollJob(jobId);
-      const url = `/api/download/${encodeURIComponent(payload.result!.outputFilename)}`;
+      return { phase: "uploading" };
+    });
+    try {
+      setState({ phase: "processing" });
+      const { url, inputBytes, outputBytes, notice, suggestedFilename } =
+        await processInline(file, params);
       setState({
         phase: "done",
         downloadUrl: url,
-        inputBytes: payload.result!.inputBytes,
-        outputBytes: payload.result!.outputBytes,
-        notice: payload.result?.message,
+        inputBytes,
+        outputBytes,
+        notice,
+        suggestedFilename,
       });
     } catch (e) {
       setState({
@@ -92,32 +119,24 @@ export function useImagePipeline() {
   }, []);
 
   const runWithWatermark = useCallback(async (main: File, mask: File) => {
-    setState({ phase: "uploading" });
-    try {
-      const maskUploadId = await uploadFile(mask);
-      const uploadId = await uploadFile(main);
-      setState({ phase: "processing" });
-      const jobRes = await fetch("/api/jobs", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          uploadId,
-          params: { kind: "removeWatermark", maskUploadId },
-        }),
-      });
-      if (!jobRes.ok) {
-        const err = await jobRes.json().catch(() => ({}));
-        throw new Error((err as { error?: string }).error || "Job failed");
+    setState((prev) => {
+      if (prev.phase === "done" && prev.downloadUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(prev.downloadUrl);
       }
-      const { jobId } = (await jobRes.json()) as { jobId: string };
-      const payload = await pollJob(jobId);
-      const url = `/api/download/${encodeURIComponent(payload.result!.outputFilename)}`;
+      return { phase: "uploading" };
+    });
+    try {
+      setState({ phase: "processing" });
+      const params = { kind: "removeWatermark", maskUploadId: "__inline__" } as const;
+      const { url, inputBytes, outputBytes, notice, suggestedFilename } =
+        await processInline(main, params, mask);
       setState({
         phase: "done",
         downloadUrl: url,
-        inputBytes: payload.result!.inputBytes,
-        outputBytes: payload.result!.outputBytes,
-        notice: payload.result?.message,
+        inputBytes,
+        outputBytes,
+        notice,
+        suggestedFilename,
       });
     } catch (e) {
       setState({
@@ -128,7 +147,12 @@ export function useImagePipeline() {
   }, []);
 
   const runBatch = useCallback(async (files: File[], childParams: SimpleProcessParams) => {
-    setState({ phase: "uploading" });
+    setState((prev) => {
+      if (prev.phase === "done" && prev.downloadUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(prev.downloadUrl);
+      }
+      return { phase: "uploading" };
+    });
     try {
       const uploadIds: string[] = [];
       for (const f of files) {
@@ -162,7 +186,14 @@ export function useImagePipeline() {
     }
   }, []);
 
-  const reset = useCallback(() => setState({ phase: "idle" }), []);
+  const reset = useCallback(() => {
+    setState((prev) => {
+      if (prev.phase === "done" && prev.downloadUrl.startsWith("blob:")) {
+        URL.revokeObjectURL(prev.downloadUrl);
+      }
+      return { phase: "idle" };
+    });
+  }, []);
 
   return { state, run, runBatch, runWithWatermark, reset };
 }
