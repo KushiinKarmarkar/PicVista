@@ -121,6 +121,7 @@ export function BatchPanel() {
           </p>
           <a
             href={state.downloadUrl}
+            download={state.suggestedFilename}
             className="inline-flex w-fit rounded-xl bg-indigo-700 px-4 py-2 text-sm font-semibold text-white"
           >
             Download ZIP

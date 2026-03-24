@@ -48,44 +48,30 @@ async function processInline(
   return { url, inputBytes, outputBytes, notice, suggestedFilename };
 }
 
-async function uploadFile(file: File): Promise<string> {
+async function processBatchInline(
+  files: File[],
+  childParams: SimpleProcessParams
+): Promise<{
+  url: string;
+  inputBytes: number;
+  outputBytes: number;
+  suggestedFilename?: string;
+}> {
   const fd = new FormData();
-  fd.append("file", file);
-  const up = await fetch("/api/upload", { method: "POST", body: fd });
-  if (!up.ok) {
-    const err = await up.json().catch(() => ({}));
-    throw new Error((err as { error?: string }).error || "Upload failed");
-  }
-  const { uploadId } = (await up.json()) as { uploadId: string };
-  return uploadId;
-}
+  for (const file of files) fd.append("files", file);
+  fd.append("childParams", JSON.stringify(childParams));
 
-type JobPayload = {
-  status: string;
-  error?: string;
-  result?: {
-    outputFilename: string;
-    outputBytes: number;
-    inputBytes: number;
-    message?: string;
-    passthrough?: boolean;
-  };
-};
-
-async function pollJob(jobId: string): Promise<JobPayload> {
-  let status = "queued";
-  let payload: JobPayload | null = null;
-  for (let i = 0; i < 600 && status !== "completed" && status !== "failed"; i++) {
-    await new Promise((r) => setTimeout(r, 250));
-    const g = await fetch(`/api/jobs/${jobId}`);
-    const next = (await g.json()) as JobPayload;
-    payload = next;
-    status = next.status;
+  const res = await fetch("/api/batch", { method: "POST", body: fd });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error((err as { error?: string }).error || "Batch failed");
   }
-  if (status !== "completed" || !payload?.result) {
-    throw new Error(payload?.error || "Processing timed out");
-  }
-  return payload;
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+  const inputBytes = parseInt(res.headers.get("X-Input-Bytes") ?? "0", 10);
+  const outputBytes = parseInt(res.headers.get("X-Output-Bytes") ?? "0", 10);
+  const suggestedFilename = res.headers.get("X-Suggested-Filename") ?? undefined;
+  return { url, inputBytes, outputBytes, suggestedFilename };
 }
 
 export function useImagePipeline() {
@@ -154,28 +140,17 @@ export function useImagePipeline() {
       return { phase: "uploading" };
     });
     try {
-      const uploadIds: string[] = [];
-      for (const f of files) {
-        uploadIds.push(await uploadFile(f));
-      }
       setState({ phase: "processing" });
-      const jobRes = await fetch("/api/batch", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ uploadIds, childParams }),
-      });
-      if (!jobRes.ok) {
-        const err = await jobRes.json().catch(() => ({}));
-        throw new Error((err as { error?: string }).error || "Batch failed");
-      }
-      const { jobId } = (await jobRes.json()) as { jobId: string };
-      const payload = await pollJob(jobId);
-      const url = `/api/download/${encodeURIComponent(payload.result!.outputFilename)}`;
+      const { url, inputBytes, outputBytes, suggestedFilename } = await processBatchInline(
+        files,
+        childParams
+      );
       setState({
         phase: "done",
         downloadUrl: url,
-        inputBytes: payload.result!.inputBytes,
-        outputBytes: payload.result!.outputBytes,
+        inputBytes,
+        outputBytes,
+        suggestedFilename,
         notice: "ZIP contains one processed file per upload (same order).",
       });
     } catch (e) {
